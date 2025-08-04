@@ -1,0 +1,15 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  fileserver:
+    build: .
+    container_name: simple_fileserver
+    ports:
+      - "8000:5000"
+    volumes:
+      # Mount shared files as read-write now, so the app can save and delete files
+      - ${DOCUMENTS_ROOT:-./Users/svenschuchardt/repos/volumes/documents}:/data
+    restart: unless-stopped
+    env_file:
+      - ./.env # This line loads the .env file into the container

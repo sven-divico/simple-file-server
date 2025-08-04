@@ -1,0 +1,148 @@
+# flask-fileserver/apidocs.yaml
+# This file contains the OpenAPI specification for the File Server API.
+# It is loaded by Flasgger to generate the interactive documentation.
+
+swagger: '2.0'
+info:
+  title: File Server API
+  description: A simple API for uploading, downloading, and managing files.
+  version: "1.0.0"
+  termsOfService: '/TOS'
+  contact:
+    name: API Support
+    url: http://www.yourapi.com/support
+    email: support@yourapi.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+host: localhost:8000
+basePath: /api/v1
+
+schemes:
+  - http
+
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-API-Key
+
+tags:
+  - name: File Management
+    description: Endpoints for uploading, downloading, and deleting files
+
+paths:
+  /upload:
+    post:
+      tags:
+        - File Management
+      summary: Upload one or more files to the server.
+      description: This endpoint is used for uploading files programmatically.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: files
+          in: formData
+          type: file
+          required: true
+          description: The file(s) to upload. You can select multiple files.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '201':
+          description: Files uploaded successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Successfully uploaded 2 file(s)"
+              uploaded_files:
+                type: array
+                items:
+                  type: string
+                example: ["document1.pdf", "image.png"]
+        '400':
+          description: Bad request (e.g., no files provided).
+        '401':
+          description: Unauthorized (Invalid or missing API key).
+
+  /files:
+    get:
+      tags:
+        - File Management
+      summary: List all available files.
+      description: Retrieves a sorted list of all filenames in the root storage directory.
+      security:
+        - ApiKeyAuth: []
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: A JSON object containing a list of filenames.
+          schema:
+            type: object
+            properties:
+              files:
+                type: array
+                items:
+                  type: string
+                example: ["document.pdf", "image.jpg", "notes.txt"]
+        '401':
+          description: Unauthorized (Invalid or missing API key).
+        '500':
+          description: Internal server error (e.g., cannot read the directory).
+
+  /files/{filename}:
+    get:
+      tags:
+        - File Management
+      summary: Download a specific file.
+      parameters:
+        - name: filename
+          in: path
+          type: string
+          required: true
+          description: The full path and name of the file to download.
+      security:
+        - ApiKeyAuth: []
+      produces:
+        - application/octet-stream
+      responses:
+        '200':
+          description: The file is sent as a downloadable attachment.
+          schema:
+            type: string
+            format: binary
+        '401':
+          description: Unauthorized (Invalid or missing API key).
+        '404':
+          description: File not found.
+
+  /delete/{filename}:
+    post:
+      tags:
+        - File Management
+      summary: Delete a specific file from the server.
+      parameters:
+        - name: filename
+          in: path
+          type: string
+          required: true
+          description: The full path and name of the file to delete.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: File deleted successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "File 'document.pdf' deleted successfully."
+        '401':
+          description: Unauthorized (Invalid or missing API key).
+        '404':
+          description: File not found.

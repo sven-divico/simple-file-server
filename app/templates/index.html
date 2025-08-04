@@ -1,0 +1,43 @@
+<!-- flask-fileserver/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        
+        <!-- === MODIFY THIS HEADER SECTION === -->
+        <div class="header">
+            <h1>File Dashboard</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('flasgger.apidocs') }}" class="logout-button">API Docs</a>
+                <a href="{{ url_for('main.logout') }}" class="logout-button">Logout</a>
+            </div>
+        </div>
+        <!-- === END OF MODIFIED SECTION === -->
+
+        <!-- Flash messages for success/error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+
+        <div class="card">
+            <h2>Upload Files</h2>
+            <form method="post" action="{{ url_for('main.upload_file') }}" enctype="multipart/form-data">
+                <input type="file" name="files" multiple required>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+        <!-- ... -->
+    </div>
+</body>
+</html>
