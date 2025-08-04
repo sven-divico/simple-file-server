@@ -37,6 +37,12 @@ This project uses modern Flask patterns to ensure the codebase is clean, maintai
 *   [Docker](https://www.docker.com/get-started)
 *   [Docker Compose](https://docs.docker.com/compose/install/)
 
+### Docker Image
+
+* https://hub.docker.com/r/sven0042/simple-file-server 
+* pull it: `docker pull sven0042/simple-file-server:latest`
+
+
 ### 1. Set Up the Environment
 
 First, clone the repository. Then, create a `.env` file in the root of the project by copying the example below. This file is used to store all your secrets and configurations.
