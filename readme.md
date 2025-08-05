@@ -81,13 +81,31 @@ You can now access the services:
 
 The `.env` file controls all the critical settings for the application.
 
-| Variable           | Description                                                                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `DOCUMENTS_ROOT`   | The path on the **host machine** where your shared files are stored. This folder is mounted into the Docker container.                     |
-| `FLASK_SECRET_KEY` | A long, random string used by Flask to securely sign session cookies. This is essential for the login system to work.                     |
-| `APP_USERNAME`     | The username for logging into the web interface.                                                                                         |
-| `APP_PASSWORD`     | The password for logging into the web interface.                                                                                         |
-| `FILE_SERVER_API_KEY`      | A long, random string that acts as a secret key for accessing the API. Any programmatic request must include this key in its headers.      |
+| Variable                      | Description                                                                                                                              | Default   |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `DOCUMENTS_ROOT`              | The path on the **host machine** where your shared files are stored.                                                                     | `./shared_files` |
+| `FLASK_SECRET_KEY`            | A long, random string used by Flask to securely sign session cookies. **Required**.                                                      | `None`    |
+| `APP_USERNAME`                | The username for logging into the web interface.                                                                                         | `None`    |
+| `APP_PASSWORD`                | The password for logging into the web interface.                                                                                         | `None`    |
+| `FILE_SERVER_API_KEY`         | A long, random secret key for accessing the API. **Required for API use**.                                                               | `None`    |
+| `ENABLE_FILE_UPLOADS`         | If "true", enables the file upload API endpoint (`/api/v1/upload`).                                                                      | `true`    |
+| `ENABLE_FILE_DOWNLOADS`       | If "true", enables the authenticated file download API endpoint (`/api/v1/files/...`).                                                   | `true`    |
+| `ENABLE_FILE_DELETION`        | If "true", enables the file deletion API endpoint (`/api/v1/delete/...`).                                                                | `true`    |
+| `ENABLE_HTTP_URL_DOWNLOADS`   | If "true", allows **unauthenticated** downloads via a direct URL (e.g., `http://localhost:8000/myfile.pdf`). **Use with caution.**          | `true`    |
+| `HEALTH_CHECK_MODE`           | Sets the detail level for the `/api/v1/health` endpoint. Can be `simple` or `debug`. **Never use `debug` in production.**                 | `simple`  |
+
+### Security Note on Public Downloads & Docker
+
+The `ENABLE_HTTP_URL_DOWNLOADS` feature makes files publicly accessible. If you want to restrict this access only to other services within your Docker network (e.g., an internal n8n instance), you can comment out the `ports` section in your `docker-compose.yml` file.
+
+```yaml
+# In docker-compose.yml
+services:
+  fileserver:
+    # ...
+    # ports:
+    #  - "8000:5000"  # <-- Commenting this out prevents access from the host machine
+```
 
 ## API Usage Example
 

@@ -81,3 +81,20 @@ def delete_file(filename):
     except Exception as e:
         flash(f'Error deleting file: {e}', 'error')
     return redirect(url_for('main.index'))
+
+@main_bp.route('/<path:filename>')
+def public_download(filename):
+    """
+    Serves a file for direct download without authentication, if enabled.
+    This route is placed last to act as a catch-all for file paths.
+    """
+    if not current_app.config.get('ENABLE_HTTP_URL_DOWNLOADS', False):
+        abort(403, "Public downloads are disabled.")
+    
+    # Sanitize the filename to prevent security issues
+    safe_filename = secure_filename(filename)
+    if safe_filename != filename:
+        # This prevents directory traversal attacks like ../../secret.txt
+        abort(400, "Invalid filename.")
+        
+    return send_from_directory(current_app.config["DOCUMENT_ROOT"], filename)

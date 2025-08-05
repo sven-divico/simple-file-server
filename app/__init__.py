@@ -15,11 +15,22 @@ def create_app():
     app = Flask(__name__)
 
     # --- Configuration ---
-    # Load config from .env file
+    
+    # --- Helper function to parse boolean env vars ---
+    def str_to_bool(s):
+        return s.lower() in ['true', '1', 't', 'y', 'yes']
+
+    # --- Configuration ---
     app.config['SECRET_KEY'] = os.getenv("FLASK_SECRET_KEY")
     app.config['DOCUMENT_ROOT'] = os.getenv("DOCUMENT_ROOT", "/data")
-    app.config['FILE_SERVER_API_KEY'] = os.getenv("FILE_SERVER_API_KEY")
-    app.config['SWAGGER'] = { 'title': 'File Server API', 'uiversion': 3 }
+    app.config['FILE_SERVER_API_KEY'] = os.getenv("FILE_SERVER_API_KEY") # <-- Renamed
+    
+    # Load new feature flags
+    app.config['ENABLE_FILE_UPLOADS'] = str_to_bool(os.getenv("ENABLE_FILE_UPLOADS", "true"))
+    app.config['ENABLE_FILE_DOWNLOADS'] = str_to_bool(os.getenv("ENABLE_FILE_DOWNLOADS", "true"))
+    app.config['ENABLE_FILE_DELETION'] = str_to_bool(os.getenv("ENABLE_FILE_DELETION", "true"))
+    app.config['ENABLE_HTTP_URL_DOWNLOADS'] = str_to_bool(os.getenv("ENABLE_HTTP_URL_DOWNLOADS", "true"))
+    app.config['HEALTH_CHECK_MODE'] = os.getenv("HEALTH_CHECK_MODE", "simple").lower()
 
     # --- Initialize Extensions ---
     login_manager.init_app(app)

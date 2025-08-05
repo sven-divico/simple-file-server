@@ -1,10 +1,13 @@
 # docker-compose.yml
 version: '3.8'
 
+networks:
+  demo:
 services:
   fileserver:
     build: .
-    container_name: simple_fileserver
+    container_name: my_fileserver
+    networks: ['demo']
     ports:
       - "8000:5000"
     volumes:

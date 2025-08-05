@@ -39,6 +39,9 @@ paths:
         - File Management
       summary: Upload one or more files to the server.
       description: This endpoint is used for uploading files programmatically.
+                   **Note:** This endpoint can be disabled via server configuration.
+      produces:
+        - application/json  
       consumes:
         - multipart/form-data
       parameters:
@@ -74,6 +77,7 @@ paths:
         - File Management
       summary: List all available files.
       description: Retrieves a sorted list of all filenames in the root storage directory.
+                   **Note:** This endpoint can be disabled via server configuration.
       security:
         - ApiKeyAuth: []
       produces:
@@ -146,3 +150,23 @@ paths:
           description: Unauthorized (Invalid or missing API key).
         '404':
           description: File not found.
+
+  /health: 
+      get:
+        tags:
+          - Service Health
+        summary: Check the health and status of the service.
+        description: |
+          Provides a health check for monitoring. 
+          The level of detail depends on the `HEALTH_CHECK_MODE` environment variable.
+        produces:
+          - application/json
+        responses:
+          '200':
+            description: Service is healthy.
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "ok"

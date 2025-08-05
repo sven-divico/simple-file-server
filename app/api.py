@@ -7,10 +7,22 @@ from werkzeug.utils import secure_filename
 
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 
+# --- NEW: Feature Flag Decorator ---
+def feature_enabled(config_key):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_app.config.get(config_key, False):
+                abort(403, description=f"This feature ({config_key}) is disabled by the server administrator.")
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = current_app.config.get("FILE_SERVER_API_KEY")
+        # Use the new key name
+        api_key = current_app.config.get("FILE_SERVER_API_KEY") 
         provided_key = request.headers.get('X-API-Key')
         if not api_key:
             abort(500, description="API key not configured on the server.")
@@ -19,11 +31,33 @@ def api_key_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- NEW: Health Check Endpoint ---
+@api_bp.route('/health', methods=['GET'])
+def health_check():
+    """Provides a health check for the service."""
+    mode = current_app.config.get('HEALTH_CHECK_MODE', 'simple')
+    if mode == 'debug':
+        # WARNING: This exposes configuration and should not be used in production.
+        config_data = {
+            "status": "ok",
+            "health_check_mode": mode,
+            "enabled_features": {
+                "uploads": current_app.config['ENABLE_FILE_UPLOADS'],
+                "downloads": current_app.config['ENABLE_FILE_DOWNLOADS'],
+                "deletions": current_app.config['ENABLE_FILE_DELETION'],
+                "public_url_downloads": current_app.config['ENABLE_HTTP_URL_DOWNLOADS'],
+            }
+        }
+        return jsonify(config_data), 200
+    
+    # Default simple mode
+    return jsonify({"status": "ok"}), 200
 
 
 # We use the full docstrings from before, I'm omitting them here for brevity
 @api_bp.route('/upload', methods=['POST'])
 @api_key_required
+@feature_enabled('ENABLE_FILE_UPLOADS') # toggle for enabling file uploads
 def upload_file_api():
     """Upload one or more files... (full docstring here)"""
     DOCUMENT_ROOT = current_app.config["DOCUMENT_ROOT"]
@@ -42,6 +76,7 @@ def upload_file_api():
 
 @api_bp.route('/files', methods=['GET'])
 @api_key_required
+@feature_enabled('ENABLE_FILE_DOWNLOADS')
 def list_files_api():
     """Lists all files in the document root."""
     DOCUMENT_ROOT = current_app.config["DOCUMENT_ROOT"]
@@ -66,6 +101,7 @@ def serve_file_api(filename):
 
 @api_bp.route('/delete/<path:filename>', methods=['POST'])
 @api_key_required
+@feature_enabled('ENABLE_FILE_DELETION')
 def delete_file_api(filename):
     """Delete a specific file... (full docstring here)"""
     DOCUMENT_ROOT = current_app.config["DOCUMENT_ROOT"]
